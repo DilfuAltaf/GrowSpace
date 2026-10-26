@@ -1,0 +1,60 @@
+# dependencies
+node_modules/
+.pnpm-store/
+
+# builds
+dist/
+.next/
+out/
+*.tsbuildinfo
+.turbo/
+
+# environment
+.env
+.env.*
+!.env.example
+!.env.*.example
+*.env
+*.env.local
+
+# firebase and credentials
+.firebase/
+firebase-debug.log
+firestore-debug.log
+ui-debug.log
+serviceAccount*.json
+*firebase-adminsdk*.json
+*.pem
+*.key
+*.crt
+*.cert
+*.p12
+*.pfx
+*credentials*.json
+
+# testing
+coverage/
+test-results/
+playwright-report/
+blob-report/
+
+# editors and OS
+.vscode/*
+!.vscode/extensions.json
+.idea/
+.DS_Store
+Thumbs.db
+Desktop.ini
+desktop.ini
+ehthumbs.db
+$RECYCLE.BIN/
+*.swp
+*.swo
+*~
+
+# misc
+*.log
+.neon
+.neon/
+.neon.*
+**/.neon/**

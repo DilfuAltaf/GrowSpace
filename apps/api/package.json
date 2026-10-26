@@ -1,0 +1,35 @@
+{
+  "name": "@growspace/api",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "node scripts/run-next.mjs dev -p 3001",
+    "build": "node scripts/run-next.mjs build",
+    "start": "node scripts/run-next.mjs start",
+    "db:check": "node --env-file-if-exists=.env.local --env-file-if-exists=../../.env --import tsx scripts/check-database.ts",
+    "db:schema": "node --env-file-if-exists=.env.local --env-file-if-exists=../../.env --import tsx scripts/check-schema.ts",
+    "smoke:research": "node --env-file-if-exists=.env.local --env-file-if-exists=../../.env --import tsx scripts/smoke-test-research.ts",
+    "test": "tsx --test --test-concurrency=1 src/lib/database/migrations.test.ts src/lib/env.test.ts src/lib/auth/auth-primitives.test.ts src/lib/auth/auth-db-integration.test.ts src/app/api/auth/auth-routes.test.ts src/lib/auth/email-verification.test.ts src/lib/auth/password-reset.test.ts src/lib/auth/concurrent-dispatch.test.ts src/app/api/dual-auth.test.ts src/app/api/gardens/gardens.test.ts src/app/api/plants/plants.test.ts src/app/api/plants/plant-logs.test.ts src/app/api/tasks/tasks.test.ts src/app/api/tasks/care-planner-5-10.test.ts src/app/api/readings/readings.test.ts src/app/api/recommendations/recommendations.test.ts src/app/api/notifications/notifications.test.ts src/lib/research/ssrf-guard.test.ts src/app/api/plants/research.test.ts src/app/api/analytics/analytics.test.ts src/app/api/assistant/assistant.test.ts src/proxy.test.ts src/app/api/health/health.test.ts src/lib/api-error.test.ts",
+    "typecheck": "tsc --noEmit",
+    "seed:catalog": "node --env-file-if-exists=.env.local --env-file-if-exists=../../.env --import tsx scripts/seed-catalog.ts"
+  },
+  "dependencies": {
+    "@growspace/shared": "workspace:*",
+    "@neondatabase/serverless": "^1.2.0",
+    "@node-rs/argon2": "^2.2.2",
+    "groq-sdk": "^1.6.0",
+    "next": "^16.4.2",
+    "react": "^19.3.1",
+    "react-dom": "^19.3.1",
+    "zod": "^4.6.7"
+  },
+  "devDependencies": {
+    "@electric-sql/pglite": "^0.5.10",
+    "@types/node": "^26.6.5",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "tsx": "^4.23.15",
+    "typescript": "^6.0.3"
+  }
+}

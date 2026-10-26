@@ -1,0 +1,135 @@
+# =============================================================================
+# GrowSpace — DigitalOcean App Platform app spec (single-origin topology)
+#
+# One app, one HTTPS hostname:
+#   https://<host>/            -> static Vite SPA (apps/web/dist)
+#   https://<host>/api/*       -> Next.js API (apps/api)
+#
+# Replace the `github.repo` / `github.branch` placeholders with your repository
+# before creating the app. Never put secret values in this file: add
+# DATABASE_URL, RATE_LIMIT_SECRET, and EMAIL_PROVIDER_API_KEY in the App
+# Platform control panel (Settings -> App-level / component environment
+# variables, type "Encrypt"). See docs/deployment/production.md.
+#
+# Deploy with:
+#   doctl apps create --spec .do/app.yaml
+# or in the control panel: Apps -> Create App -> import the spec.
+# =============================================================================
+
+name: growspace
+region: nyc
+
+features:
+  - buildpack-stack=ubuntu-22
+
+alerts:
+  - rule: DEPLOYMENT_FAILED
+  - rule: DOMAIN_FAILED
+
+# Path-based routing across the two components. Order matters: the /api prefix
+# is evaluated before the catch-all, so API requests never reach the SPA.
+ingress:
+  rules:
+    # preserve_path_prefix is REQUIRED. App Platform strips the matched prefix
+    # before forwarding by default, so without this a request to /api/health
+    # would arrive at Next.js as /health and 404. The API's routes are mounted
+    # under /api by Next.js itself.
+    - component:
+        name: api
+      preserve_path_prefix: true
+      match:
+        path:
+          prefix: /api
+    - component:
+        name: web
+      match:
+        path:
+          prefix: /
+
+services:
+  - name: api
+    environment_slug: node-js
+    github:
+      repo: your-github-user/growspace
+      branch: main
+      deploy_on_push: true
+    # Build from the repository root so the pnpm workspace can resolve
+    # @growspace/shared. The whole repo stays available at runtime.
+    source_dir: /
+    build_command: pnpm --filter @growspace/api build
+    # run-next.mjs pins its own working directory to apps/api, so this can be
+    # launched from the repository root and still finds the built .next output.
+    run_command: node apps/api/scripts/run-next.mjs start
+    # App Platform injects PORT with this value; next start reads PORT.
+    http_port: 3001
+    instance_size_slug: apps-s-1vcpu-0.5gb
+    instance_count: 1
+    health_check:
+      http_path: /api/health
+      initial_delay_seconds: 30
+      period_seconds: 30
+      timeout_seconds: 5
+      failure_threshold: 3
+    envs:
+      - key: NODE_ENV
+        value: production
+        scope: RUN_AND_BUILD_TIME
+        type: GENERAL
+      # App Platform terminates TLS at its edge and forwards the client IP in
+      # X-Forwarded-For. Without this, every client shares the 127.0.0.1 login
+      # rate-limit bucket.
+      - key: TRUST_PROXY
+        value: "true"
+        scope: RUN_TIME
+        type: GENERAL
+      # Public HTTPS origin of the app. Replace with the final hostname; the API
+      # builds verification and password-reset links from it.
+      - key: APP_ORIGIN
+        value: https://growspace.example.com
+        scope: RUN_TIME
+        type: GENERAL
+      # Must match APP_ORIGIN exactly. Production fails closed (503 on every
+      # /api request) when this is missing or malformed.
+      - key: ALLOWED_ORIGINS
+        value: https://growspace.example.com
+        scope: RUN_TIME
+        type: GENERAL
+      # Optional, non-secret sender identity for transactional email.
+      # - key: EMAIL_FROM
+      #   value: GrowSpace <noreply@growspace.example.com>
+      #   scope: RUN_TIME
+      #   type: GENERAL
+    # Required secrets are intentionally NOT stored here. Add these in the
+    # control panel with type "Encrypt" (scope RUN_TIME) before the app can pass
+    # its health check:
+    #   DATABASE_URL           pooled Neon connection string (-pooler host)
+    #   RATE_LIMIT_SECRET      >= 32 random characters (auth rate limiting)
+    #   EMAIL_PROVIDER_API_KEY Resend key; without it verification/reset emails
+    #                          are silently mocked (authConfigured.emailDelivery
+    #                          reports false)
+    #   GROQ_API_KEY           optional: AI assistant + plant research
+    #   TAVILY_API_KEY or BRAVE_SEARCH_API_KEY   optional: web research
+
+static_sites:
+  - name: web
+    environment_slug: node-js
+    github:
+      repo: your-github-user/growspace
+      branch: main
+      deploy_on_push: true
+    source_dir: /
+    build_command: pnpm --filter @growspace/web build
+    output_dir: apps/web/dist
+    index_document: index.html
+    # SPA deep links (/dashboard, /plants/<slug>, /auth/verify-email, ...) fall
+    # back to index.html so React Router can resolve them. /api/* is claimed by
+    # the ingress rule above and never reaches this fallback.
+    catchall_document: index.html
+    envs:
+      # Empty = same-origin: the SPA calls relative /api paths, so the
+      # __Host- session and CSRF cookies stay first-party. This value is baked
+      # into the bundle at build time; set it only for the subdomain split.
+      - key: VITE_API_BASE_URL
+        value: ""
+        scope: BUILD_TIME
+        type: GENERAL

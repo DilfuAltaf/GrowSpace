@@ -1,0 +1,102 @@
+@import 'tailwindcss';
+
+@theme {
+  --font-sans:
+    'Plus Jakarta Sans', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
+
+  --color-sage: #587c63;
+  --color-forest: #294d38;
+  --color-soft-sage: #e5ede3;
+  --color-page: #f7f8f3;
+  --color-card: #ffffff;
+
+  --color-ink: #243329;
+  --color-muted: #68756a;
+  --color-line: #e2e7df;
+  --color-line-strong: #d5ddd3;
+
+  --color-success: #28784b;
+  --color-success-surface: #e1f1e5;
+  --color-warning: #a86616;
+  --color-warning-surface: #f8ebd8;
+  --color-critical: #b54743;
+  --color-critical-surface: #f8e2e0;
+  --color-info: #4778b8;
+  --color-info-surface: #e5eaf1;
+
+  --radius-card: 1rem;
+  --radius-control: 0.625rem;
+
+  --shadow-card: 0 4px 20px rgba(36, 51, 41, 0.04);
+  --shadow-float: 0 12px 32px rgba(36, 51, 41, 0.1);
+}
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    @apply bg-page text-ink antialiased;
+    font-family: var(--font-sans);
+    min-width: 320px;
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--color-sage);
+    outline-offset: 2px;
+  }
+
+  ::selection {
+    background: var(--color-soft-sage);
+    color: var(--color-forest);
+  }
+
+  h1,
+  h2,
+  h3,
+  h4 {
+    text-wrap: balance;
+  }
+
+  p {
+    text-wrap: pretty;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+}
+
+@layer components {
+  .container-page {
+    @apply mx-auto w-full max-w-[1440px] px-4 sm:px-6 xl:px-8;
+  }
+
+  .card-surface {
+    @apply rounded-card border border-line bg-card shadow-card;
+  }
+
+  .field-label {
+    @apply mb-1.5 block text-sm font-medium text-ink;
+  }
+
+  .field-input {
+    @apply h-11 w-full rounded-control border border-line-strong bg-card px-3 text-[15px] text-ink outline-none transition placeholder:text-muted/70 focus:border-sage focus:ring-2 focus:ring-sage/20 disabled:cursor-not-allowed disabled:bg-page disabled:text-muted;
+  }
+
+  .field-error {
+    @apply mt-1.5 text-sm text-critical;
+  }
+
+  .eyebrow {
+    @apply text-xs font-semibold tracking-[0.14em] text-sage uppercase;
+  }
+}

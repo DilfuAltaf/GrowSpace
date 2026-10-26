@@ -1,0 +1,38 @@
+{
+  "name": "growspace",
+  "version": "0.1.0",
+  "private": true,
+  "description": "GrowSpace — smart and urban farming companion for small gardens.",
+  "packageManager": "pnpm@12.4.1",
+  "engines": {
+    "node": ">=22.12.0"
+  },
+  "scripts": {
+    "dev": "pnpm --parallel --filter @growspace/web --filter @growspace/api dev",
+    "dev:web": "pnpm --filter @growspace/web dev",
+    "dev:api": "pnpm --filter @growspace/api dev",
+    "build": "pnpm --filter @growspace/web build && pnpm --filter @growspace/api build",
+    "lint": "eslint .",
+    "typecheck": "pnpm --filter @growspace/shared typecheck && pnpm --filter @growspace/web typecheck && pnpm --filter @growspace/api typecheck",
+    "test": "pnpm --filter @growspace/shared test && pnpm --filter @growspace/web test && pnpm --filter @growspace/api test && pnpm test:migrations && pnpm test:deploy",
+    "test:migrations": "node --test scripts/test/migration-runner.test.mjs scripts/test/real-db-integration.test.mjs",
+    "test:deploy": "node --test scripts/test/deployment-config.test.mjs",
+    "db:check": "pnpm --filter @growspace/api db:check",
+    "db:schema": "pnpm --filter @growspace/api db:schema",
+    "smoke:research": "pnpm --filter @growspace/api smoke:research",
+    "seed:catalog": "pnpm --filter @growspace/api seed:catalog"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "eslint": "^10.13.0",
+    "eslint-plugin-react-hooks": "^7.1.1",
+    "eslint-plugin-react-refresh": "^0.5.7",
+    "globals": "^17.13.0",
+    "typescript": "^6.0.3",
+    "typescript-eslint": "^8.71.2"
+  },
+  "dependencies": {
+    "@neon/config": "^1.9.2",
+    "@neon/env": "^1.6.3"
+  }
+}
